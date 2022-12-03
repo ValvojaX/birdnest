@@ -1,0 +1,2 @@
+class PilotNotFoundException(Exception):
+    pass

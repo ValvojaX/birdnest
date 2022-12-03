@@ -1,0 +1,86 @@
+body, ul, li, h1, h2, h3, h4, h5, h6, p, a {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: black;
+    width: 100%;
+    height: 100%;
+}
+
+.container {
+    width: 100%;
+    height: 90%;
+    background-color: rgb(10, 10, 10);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.container-item {
+    height: 33vh;
+    min-width: 30vw;
+    padding: 20px;
+    margin: 20px;
+    background-color: rgb(10, 10, 10);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+}
+
+.container-item h2 {
+    text-align: center;
+    border-top: 1px solid rgb(70, 70, 70);
+    border-bottom: 1px solid rgb(70, 70, 70);
+    padding: 15px 0px 15px 0px;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+#violations-list {
+    overflow-y: auto;
+}
+
+#violations-list li {
+    padding: 10px;
+}
+
+#latest-violation {
+
+}
+
+.violation {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid white;
+    list-style: none;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.violation > p, .violation > h4 {
+    margin: 5px;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    background: rgb(200, 200, 200);
+    padding-left: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(100, 100, 100);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(50, 50, 50);
+}
