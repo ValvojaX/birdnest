@@ -1,9 +1,8 @@
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
-from src.violation_manager.violation_manager import ViolationManager, OnViolationData, OnViolationExpiredData
+from src.violation_manager.violation_manager import ViolationManager, ViolationData
 from src.database.database import Database
 from os import getenv
-from waitress import serve
 
 
 class Birdnest(Flask):
@@ -38,15 +37,16 @@ def handle_disconnect():
 @socketio.on('request_cached_violations')
 def handle_get_cached_violations():
     violations = birdnest_app.violation_manager.fetch_violations()
+    violations = [violation.asdict() for violation in violations]
     socketio.emit('on_receive_cached_violations', violations, to=request.sid)
 
 
-def on_expire(data: OnViolationExpiredData) -> None:
-    socketio.emit('on_violation_expired', data, broadcast=True)
+def on_expire(violation_data: ViolationData) -> None:
+    socketio.emit('on_violation_expired', violation_data.asdict(), broadcast=True)
 
 
-def on_violation(data: OnViolationData) -> None:
-    socketio.emit('on_violation', data, broadcast=True)
+def on_violation(violation_data: ViolationData) -> None:
+    socketio.emit('on_violation', violation_data.asdict(), broadcast=True)
 
 
 violation_manager.on_violation = on_violation

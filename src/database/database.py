@@ -23,9 +23,8 @@ class Database:
                 position_y REAL,
                 distance REAL,
                 timestamp TIMESTAMP,
-                delete_at TIMESTAMP,
                 
-                PRIMARY KEY (serial_number, timestamp)
+                PRIMARY KEY (serial_number)
             );""")
 
         self.db.execute("""

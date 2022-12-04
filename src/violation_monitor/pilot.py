@@ -8,6 +8,7 @@ class Pilot:
         :param email: Email of the pilot
         :param phone_number: Phone number of the pilot
         """
+
         self.first_name: str = first_name
         self.last_name: str = last_name
         self.email: str = email

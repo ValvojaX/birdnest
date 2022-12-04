@@ -2,22 +2,22 @@ var latest_violation = document.getElementById('latest-violation');
 var all_violations = document.getElementById('violations-list');
 
 function addViolation(violation) {
-    let li = document.getElementById('violation-' + violation.serial_number);
+    let li = document.getElementById('violation-' + violation.drone.serial_number);
     if (li) {
         li.remove();
     }
 
     li = document.createElement('li');
-    li.id = 'violation-' + violation.serial_number;
+    li.id = 'violation-' + violation.drone.serial_number;
     let div = document.createElement('div');
     div.className = 'violation';
     div.innerHTML = `
-        <h4> Serial Number: ${violation.serial_number} </h4>
+        <h4> Serial Number: ${violation.drone.serial_number} </h4>
         <p> Pilot: ${violation.pilot.first_name} ${violation.pilot.last_name} </p>
-        <p> Distance: ${violation.distance} </p>
+        <p> Distance: ${violation.drone.distance} </p>
         <p> Email: ${violation.pilot.email} </p>
         <p> Phone Number: ${violation.pilot.phone_number} </p>
-        <p> Position: (${violation.position_x}, ${violation.position_y}) </p>
+        <p> Position: (${violation.drone.position_x}, ${violation.drone.position_y}) </p>
         <p> Time: ${violation.timestamp} </p>
     `;
 
@@ -34,13 +34,13 @@ function addViolation(violation) {
 }
 
 function removeViolation(violation) {
-    var element = document.getElementById('violation-' + violation.serial_number);
+    var element = document.getElementById('violation-' + violation.drone.serial_number);
     if (element) {
         element.remove();
     }
 
     var last_violation = document.getElementById('last-violation');
-    if (last_violation && last_violation_serial == violation.serial_number) {
+    if (last_violation && last_violation_serial == violation.drone.serial_number) {
         last_violation.innerHTML = '<p> No violations yet </p>';
     }
 }

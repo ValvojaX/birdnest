@@ -24,7 +24,6 @@ class Drone:
         self.position_y: float = position_y
         self.distance: float | None = distance
         self.timestamp: str = timestamp
-        self.delete_after: float = 0
         self.pilot: Pilot | None = None
 
     def asdict(self) -> dict[str, str | float]:
@@ -34,7 +33,6 @@ class Drone:
             "position_y": self.position_y,
             "distance": self.distance,
             "timestamp": self.timestamp,
-            "delete_after": self.delete_after,
             "pilot": self.pilot.asdict() if self.pilot is not None else None
         }
 
