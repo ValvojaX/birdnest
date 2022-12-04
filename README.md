@@ -8,7 +8,7 @@ Program done as reassignment for Reaktor Group's summer internship 2023.
 
 ## How to run
 
-```waitress-serve --call src.birdnest:start```
+```waitress-serve src.birdnest:birdnest_app```
 
 ## Live demo
 
