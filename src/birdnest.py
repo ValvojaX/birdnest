@@ -3,6 +3,7 @@ from flask_socketio import SocketIO
 from src.violation_manager.violation_manager import ViolationManager, OnViolationData, OnViolationExpiredData
 from src.database.database import Database
 from os import getenv
+from waitress import serve
 
 
 class Birdnest(Flask):
@@ -48,19 +49,13 @@ def on_violation(data: OnViolationData) -> None:
     socketio.emit('on_violation', data, broadcast=True)
 
 
-def start():
-    violation_manager.on_violation = on_violation
-    violation_manager.on_violation_expired = on_expire
+violation_manager.on_violation = on_violation
+violation_manager.on_violation_expired = on_expire
 
-    violation_manager.create_monitor(
-        update_interval=2,
-        ndz_origin=(250000, 250000),
-        ndz_radius=100
-    )
+violation_manager.create_monitor(
+    update_interval=2,
+    ndz_origin=(250000, 250000),
+    ndz_radius=100
+)
 
-    violation_manager.start_monitor()
-    socketio.run(birdnest_app)
-
-
-# if __name__ == '__main__':
-#     start()
+violation_manager.start_monitor()

@@ -10,6 +10,13 @@ class ViolationManager:
                  database: Database,
                  delete_data_after: int = 0,
                  ) -> None:
+        """
+        Stores violations in database and notifies listeners
+
+        :param database: Database object
+        :param delete_data_after: Time in seconds after which the violation data will be deleted from the database
+        """
+
         self.database: Database = database
         self.delete_data_after: int = delete_data_after
         self.on_expire: Callable[[OnViolationExpiredData], None] | None = None
@@ -17,6 +24,12 @@ class ViolationManager:
         self.violation_monitor: ViolationMonitor | None = None
 
     def fetch_violations(self) -> list[OnViolationData]:
+        """
+        Fetches all violations from the database
+
+        :return: List of violations
+        """
+
         result = self.database.db.execute("""
             SELECT drone_serial_number, first_name, last_name, email, phone_number
             FROM pilots
@@ -51,6 +64,13 @@ class ViolationManager:
         return violations
 
     def _on_expire(self, drone: Drone) -> None:
+        """
+        Deletes expired violation data from the database and notifies listeners
+
+        :param drone: Drone object
+        :return: None
+        """
+
         self.database.db.execute("""
             DELETE FROM drones WHERE serial_number = ?
         """, (drone.serial_number,))
@@ -62,6 +82,13 @@ class ViolationManager:
             self.on_expire(data)
 
     def _on_violation(self, drone: Drone):
+        """
+        Stores violation data in the database and notifies listeners
+
+        :param drone:
+        :return: None
+        """
+
         self.database.db.execute("""
             INSERT INTO drones(serial_number, position_x, position_y, distance, timestamp)
             VALUES (?, ?, ?, ?, ?)""", (
@@ -99,9 +126,24 @@ class ViolationManager:
             delayed_task.start()
 
     def create_monitor(self, update_interval: int, ndz_origin: tuple[float, float], ndz_radius: int) -> None:
+        """
+        Creates a violation monitor object for manager
+
+        :param update_interval: interval in seconds between drone position updates
+        :param ndz_origin: origin of the no drone zone
+        :param ndz_radius: radius of the no drone zone
+        :return: None
+        """
+
         self.violation_monitor = ViolationMonitor(callback=self._on_violation, update_interval=update_interval,
                                                   ndz_origin=ndz_origin, ndz_radius=ndz_radius)
 
     def start_monitor(self) -> None:
+        """
+        Starts the violation monitor
+
+        :return: None
+        """
+
         if self.violation_monitor is not None:
             self.violation_monitor.start()

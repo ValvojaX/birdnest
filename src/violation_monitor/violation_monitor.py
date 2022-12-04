@@ -54,7 +54,7 @@ class ViolationMonitor(Thread):
         elif response.status_code == 404:
             raise PilotNotFoundException
 
-        raise Exception(f"Unknown error: {response.status_code}")
+        raise PilotNotFoundException(f"Unknown error: {response.status_code}")
 
     @staticmethod
     def fetch_drone_positions() -> list[Drone]:
@@ -75,10 +75,6 @@ class ViolationMonitor(Thread):
                     position_y=float(drone.find("positionY").text),
                     timestamp=capture.attrib.get("snapshotTimestamp")
                 ))
-
-        else:
-            print(response.text)
-            raise Exception(f"Unknown error: {response.status_code}")
 
         return drones
 
