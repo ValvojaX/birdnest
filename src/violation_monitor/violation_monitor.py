@@ -77,6 +77,7 @@ class ViolationMonitor(Thread):
                 ))
 
         else:
+            print(response.text)
             raise Exception(f"Unknown error: {response.status_code}")
 
         return drones

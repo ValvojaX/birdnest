@@ -53,7 +53,7 @@ socket.on('on_violation', function(drone_data) {
     addViolation(drone_data);
 });
 
-socket.on('on_expire', function(drone_data) {
+socket.on('on_violation_expired', function(drone_data) {
     // removeViolation(drone_data);
 });
 
