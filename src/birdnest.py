@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from src.violation_manager.violation_manager import ViolationManager, OnViolationData, OnViolationExpiredData
 from src.database.database import Database
+from os import getenv
 
 
 class Birdnest(Flask):
@@ -14,7 +15,7 @@ class Birdnest(Flask):
 database = Database(":memory:")
 violation_manager = ViolationManager(database=database, delete_data_after=600)
 birdnest_app = Birdnest(database=database, violation_manager=violation_manager)
-birdnest_app.config['SECRET_KEY'] = 'secret'
+birdnest_app.config['SECRET_KEY'] = getenv('FLASK_SECRET', 'secret')
 socketio = SocketIO(birdnest_app)
 
 
