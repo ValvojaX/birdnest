@@ -9,6 +9,9 @@ class ViolationData:
         :param delete_after: Seconds after which the violation data will be deleted from the database. 0 means it will not be deleted.
         """
 
+        # shared data
+        self.pilot_id: str = "Unknown"
+
         # drone data
         self.serial_number: str = "Unknown"
         self.position_x: float | None = None
@@ -26,17 +29,18 @@ class ViolationData:
         self.delete_after: int = delete_after
 
     def from_drone(self, drone: Drone) -> None:
+        self.pilot_id = drone.pilot.pilot_id
+
         self.serial_number = drone.serial_number
         self.position_x = round(drone.position_x, 2)
         self.position_y = round(drone.position_y, 2)
         self.distance = round(drone.distance, 2)
         self.timestamp = drone.timestamp
 
-        if drone.pilot is not None:
-            self.first_name = drone.pilot.first_name
-            self.last_name = drone.pilot.last_name
-            self.email = drone.pilot.email
-            self.phone_number = drone.pilot.phone_number
+        self.first_name = drone.pilot.first_name
+        self.last_name = drone.pilot.last_name
+        self.email = drone.pilot.email
+        self.phone_number = drone.pilot.phone_number
 
     def asdict(self) -> dict:
         return {
@@ -47,6 +51,7 @@ class ViolationData:
                 "distance": self.distance,
             },
             "pilot": {
+                "pilot_id": self.pilot_id,
                 "first_name": self.first_name,
                 "last_name": self.last_name,
                 "email": self.email,

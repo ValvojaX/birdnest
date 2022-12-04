@@ -45,6 +45,7 @@ class ViolationMonitor(Thread):
         if response.status_code == 200:
             data = response.json()
             return Pilot(
+                pilot_id=data["pilotId"],
                 first_name=data["firstName"],
                 last_name=data["lastName"],
                 email=data["email"],

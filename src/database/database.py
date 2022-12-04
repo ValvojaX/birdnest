@@ -16,28 +16,29 @@ class Database:
 
         :return: None
         """
-        self.db.execute("""
-            CREATE TABLE IF NOT EXISTS drones (
-                serial_number TEXT,
-                position_x REAL,
-                position_y REAL,
-                distance REAL,
-                timestamp TIMESTAMP,
-                
-                PRIMARY KEY (serial_number)
-            );""")
 
         self.db.execute("""
             CREATE TABLE IF NOT EXISTS pilots (
-                drone_serial_number TEXT,
+                pilot_id TEXT,
                 first_name TEXT,
                 last_name TEXT,
                 email TEXT,
                 phone_number TEXT,
-                timestamp TIMESTAMP,
                 
-                PRIMARY KEY (drone_serial_number),
-                FOREIGN KEY (drone_serial_number) REFERENCES drones(serial_number)
+                PRIMARY KEY (pilot_id)
+            );""")
+
+        self.db.execute("""
+            CREATE TABLE IF NOT EXISTS drones (
+                pilot_id TEXT,
+                serial_number TEXT,
+                position_x REAL,
+                position_y REAL,
+                distance REAL,
+                timestamp TIMESTAMP         NOT NULL,
+
+                PRIMARY KEY (pilot_id),
+                FOREIGN KEY (pilot_id) REFERENCES pilots (pilot_id) ON DELETE CASCADE
             );""")
 
         self.db.commit()

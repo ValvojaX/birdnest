@@ -2,6 +2,7 @@ from src.violation_monitor.violation_monitor import ViolationMonitor, Drone, Pil
 from src.violation_manager.structs import ViolationData
 from src.utils.delayed_task import DelayedTask
 from src.database.database import Database
+from datetime import datetime, timezone
 from typing import Callable
 
 
@@ -31,31 +32,26 @@ class ViolationManager:
         """
 
         result = self.database.db.execute("""
-            SELECT drone_serial_number, first_name, last_name, email, phone_number
-            FROM pilots
+            SELECT P.pilot_id, P.first_name, P.last_name, P.email, P.phone_number, 
+                    D.serial_number, D.position_x, D.position_y, D.distance, DATETIME(D.timestamp, 'localtime')
+            FROM pilots AS P
+            INNER JOIN drones AS D ON P.pilot_id = D.pilot_id
+            ORDER BY D.timestamp ASC
         """)
 
         rows = result.fetchall()
-        pilots: dict[str, Pilot] = {}
-        default_pilot = Pilot(first_name="Unknown", last_name="Unknown", email="Unknown", phone_number="Unknown")
-        for serial_num, first, last, email, phone in rows:
-            pilots[serial_num] = Pilot(first_name=first, last_name=last, email=email, phone_number=phone)
-
-        result = self.database.db.execute("""
-            SELECT serial_number, ROUND(position_x, 2), ROUND(position_y, 2), ROUND(distance, 2), timestamp, STRFTIME('%S', 'now') - STRFTIME('%S', timestamp)
-            FROM drones
-            WHERE timestamp > datetime('now', '-10 minutes')
-            ORDER BY timestamp ASC
-        """)
-
         violations: list[ViolationData] = []
-        rows = result.fetchall()
-        for serial_num, x, y, distance, timestamp, passed_time in rows:
-            drone = Drone(serial_number=serial_num, position_x=x, position_y=y, distance=distance, timestamp=timestamp)
-            drone.pilot = pilots.get(serial_num, default_pilot)
+        for pilot_id, first, last, email, phone, serial, pos_x, pos_y, distance, timestamp in rows:
+            drone = Drone(serial_number=serial, position_x=pos_x, position_y=pos_y, distance=distance, timestamp=timestamp)
+            drone.pilot = Pilot(pilot_id=pilot_id, first_name=first, last_name=last, email=email, phone_number=phone)
 
-            delete_after = max(self.delete_data_after - passed_time, 0)
-            violation_data = ViolationData(delete_after=delete_after)
+            violation_date = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+            delete_after = max(self.delete_data_after - (datetime.now().timestamp() - violation_date.timestamp()), 0)
+            if delete_after == 0:
+                self._on_expire(drone)
+                continue
+
+            violation_data = ViolationData(delete_after=int(delete_after))
             violation_data.from_drone(drone)
             violations.append(violation_data)
 
@@ -73,9 +69,9 @@ class ViolationManager:
             SELECT EXISTS (
                 SELECT 1
                 FROM drones
-                WHERE serial_number = ? AND STRFTIME('%S', 'now') - STRFTIME('%S', timestamp) > ?
+                WHERE pilot_id = ? AND STRFTIME('%S', 'now') - STRFTIME('%S', timestamp) > ?
             );
-            """, (drone.serial_number, self.delete_data_after / 60))
+            """, (drone.pilot.pilot_id, self.delete_data_after / 60))
 
         # Handle case where drone violation has been updated since the violation was created
         has_expired = cursor.fetchone()[0]
@@ -83,11 +79,7 @@ class ViolationManager:
             return
 
         self.database.db.execute("""
-            DELETE FROM drones WHERE serial_number = ?
-            """, (drone.serial_number,))
-
-        self.database.db.execute("""
-            DELETE FROM pilots WHERE drone_serial_number = ?
+            DELETE FROM pilots WHERE pilot_id = ?
             """, (drone.serial_number,))
 
         self.database.db.commit()
@@ -105,10 +97,15 @@ class ViolationManager:
         :return: None
         """
 
+        # Drone pilot information was not found
+        if drone.pilot is None:
+            return
+
         self.database.db.execute("""
-            INSERT OR REPLACE INTO drones(serial_number, position_x, position_y, distance, timestamp)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT OR REPLACE INTO drones(pilot_id, serial_number, position_x, position_y, distance, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?)
             """, (
+            drone.pilot.pilot_id,
             drone.serial_number,
             drone.position_x,
             drone.position_y,
@@ -116,17 +113,16 @@ class ViolationManager:
             drone.timestamp
         ))
 
-        if drone.pilot is not None:
-            self.database.db.execute("""
-                INSERT INTO pilots(drone_serial_number, first_name, last_name, email, phone_number)
-                VALUES (?, ?, ?, ?, ?)
-                ON CONFLICT (drone_serial_number) DO NOTHING""", (
-                drone.serial_number,
-                drone.pilot.first_name,
-                drone.pilot.last_name,
-                drone.pilot.email,
-                drone.pilot.phone_number,
-            ))
+        self.database.db.execute("""
+            INSERT INTO pilots(pilot_id, first_name, last_name, email, phone_number)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT (pilot_id) DO NOTHING""", (
+            drone.pilot.pilot_id,
+            drone.pilot.first_name,
+            drone.pilot.last_name,
+            drone.pilot.email,
+            drone.pilot.phone_number,
+        ))
 
         self.database.db.commit()
         violation_data = ViolationData(delete_after=self.delete_data_after)

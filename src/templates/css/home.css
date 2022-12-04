@@ -24,7 +24,7 @@ body {
 }
 
 .container-item {
-    height: 33vh;
+    height: 35vh;
     min-width: 30vw;
     padding: 20px;
     margin: 20px;
@@ -50,10 +50,6 @@ body {
 
 #violations-list li {
     padding: 10px;
-}
-
-#latest-violation {
-
 }
 
 .violation {

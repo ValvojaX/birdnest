@@ -40,4 +40,8 @@ class Drone:
         return f"""Drone(
         serial_number={self.serial_number}, 
         position_x={self.position_x}, 
-        position_y={self.position_y})"""
+        position_y={self.position_y})
+        distance={self.distance},
+        timestamp={self.timestamp},
+        pilot={self.pilot}
+        )"""
